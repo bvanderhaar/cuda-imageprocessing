@@ -26,3 +26,9 @@
 *.exe
 *.out
 *.app
+
+# Image Working Files
+sestonDiatom.bmp
+yeast.bmp
+chryseobacterium.bmp
+mycoplasma.bmp
