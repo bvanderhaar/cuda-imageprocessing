@@ -19,62 +19,58 @@ inline void gpuAssert(cudaError_t code, const char *file, int line,
   }
 }
 
-__global__ void cu_dotProduct(long long *distance_array_d,
-                              long long *force_array_d,
-                              long long *result_array_d, long long max) {
-  long long x;
+__global__ void cu_sobel(int *source_array_d, int *result_array_d,
+                         int source_row_size, int source_size) {
+  int x, x_0, x_1, x_2, x_3, x_5, x_6, x_7, x_8, sum_0, sum_1;
   x = blockIdx.x * BLOCK_SIZE + threadIdx.x;
-  if (x < max) {
-    result_array_d[x] = distance_array_d[x] * force_array_d[x];
-  }
-}
-
-__global__ void cu_gen_force_array(long long *force_array_d, long long max) {
-  long long x, half_vectors;
-  x = blockIdx.x * BLOCK_SIZE + threadIdx.x;
-  half_vectors = max / 2;
-  if (x < half_vectors) {
-    force_array_d[x] = x + 1;
-  } else {
-    force_array_d[x] = half_vectors + (half_vectors - x);
-  }
-}
-
-__global__ void cu_gen_distance_array(long long *distance_array_d,
-                                      long long max) {
-  long long x;
-  x = blockIdx.x * BLOCK_SIZE + threadIdx.x;
-  distance_array_d[x] = (x + 1) % 10;
-  if (distance_array_d[x] == 0) {
-    distance_array_d[x] = 10;
+  // edge of matrix has zeros.  don't process
+  bool top = x < source_row_size;
+  bool bottom = x > (size - source_row_size);
+  bool left_edge = (x % source_row_size) == 0;
+  bool right_edge = (x % (source_row_size + 1)) == 0;
+  if (top == false && bottom == false && left_edge == false &&
+      right_edge == false) {
+    x_0 = source_array_d[x - row_size - 1];
+    x_1 = source_array_d[x - row_size];
+    x_2 = source_array_d[x - row_size + 1];
+    x_3 = source_array_d[x - 1];
+    x_5 = source_array_d[x + 1];
+    x_6 = source_array_d[x + row_size - 1];
+    x_7 = source_array_d[x + row_size];
+    x_8 = source_array_d[x + row_size + 1];
+    sum_0 = (x_0 + (2 * x_1) + x_2) - (x_6 + (2 * x_7) + x_8);
+    sum_1 = (x_2 + (2 * x_5) + x_8) - (x_0 + (2 * x_3) + x_6);
+    result_array_d[x] = (sum_0 + sum_1);
   }
 }
 
 // Called from driver program.  Handles running GPU calculation
-extern "C" void gpu_dotProduct(long long *result_array, long long num_vectors) {
-  long long *distance_array_d;
-  long long *force_array_d;
-  long long *result_array_d;
+extern "C" void gpu_sobel(int *source_array, int *result_array,
+                          int dest_row_size, int dest_column_size) {
+  // while confusing, source is 2 cols + 2 rows larger than dest for 0 padding
+  int dest_size = dest_row_size * dest_column_size;
+  int source_size = (dest_row_size + 2) * (dest_column_size + 2);
+  int source_row_size = dest_row_size + 2;
 
   // allocate space in the device
-  cudaMalloc((void **)&distance_array_d, sizeof(long long) * num_vectors);
-  cudaMalloc((void **)&force_array_d, sizeof(long long) * num_vectors);
-  cudaMalloc((void **)&result_array_d, sizeof(long long) * num_vectors);
+  cudaMalloc((void **)&source_array_d, sizeof(int) * source_size);
+  cudaMalloc((void **)&result_array_d, sizeof(int) * dest_size);
+
+  cudaMemcpy(source_array, source_array_d, sizeof(int) * source_size,
+             cudaMemcpyHostToDevice);
+  cudaMemcpy(result_array, result_array_d, sizeof(int) * dest_size,
+             cudaMemcpyHostToDevice);
 
   // set execution configuration
   dim3 dimblock(BLOCK_SIZE);
-  dim3 dimgrid(ceil((long double)num_vectors / BLOCK_SIZE));
+  dim3 dimgrid(ceil((double)dest_size / BLOCK_SIZE));
 
-  cu_gen_force_array<<<dimgrid, dimblock>>>(force_array_d, num_vectors);
-  cu_gen_distance_array<<<dimgrid, dimblock>>>(distance_array_d, num_vectors);
-  cu_dotProduct<<<dimgrid, dimblock>>>(distance_array_d, force_array_d,
-                                       result_array_d, num_vectors);
+  cu_sobel<<<dimgrid, dimblock>>>(source_array_d, result_array_d, );
   // transfer results back to host
-  cudaMemcpy(result_array, result_array_d, sizeof(long long) * num_vectors,
+  cudaMemcpy(result_array, result_array_d, sizeof(int) * num_vectors,
              cudaMemcpyDeviceToHost);
 
   // release the memory on the GPU
-  cudaFree(distance_array_d);
-  cudaFree(force_array_d);
+  cudaFree(source_array_d);
   cudaFree(result_array_d);
 }
