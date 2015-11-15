@@ -115,6 +115,7 @@ int main(int argc, char* argv[])
 			newData[row].push_back (sum_0 + sum_1);
 		}
 	}
+	std::cout << "finished iterating old data" << std::endl;
 
 	// write header to new image file
 	newImageFile.write ((char *) &header, sizeof(header_type));
