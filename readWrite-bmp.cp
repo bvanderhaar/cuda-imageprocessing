@@ -83,13 +83,18 @@ int main(int argc, char* argv[])
 		data.push_back (vector <int>());
 		// pad column
 		data[row].push_back(0);
-		for (col=0; col < information.width; col++) {
+		for (col=0; col <= information.width; col++) {
 			imageFile.read ((char *) tempData, 3 * sizeof(unsigned char));
 			data[row].push_back ((int) tempData[0]);
+
 		}
+		// add padding
+		data[row].push_back(0);
 		if (padding)
 			imageFile.read ((char *) tempData, padding * sizeof(unsigned char));
 	}
+	// add padding
+	data.push_back(vector<int>());
 	cout << imageFileName << ": " << information.width << " x " << information.height << endl;
 
 
