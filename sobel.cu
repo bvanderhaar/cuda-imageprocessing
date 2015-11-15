@@ -65,7 +65,8 @@ extern "C" void gpu_sobel(int *source_array, int *result_array,
   dim3 dimblock(BLOCK_SIZE);
   dim3 dimgrid(ceil((double)dest_size / BLOCK_SIZE));
 
-  cu_sobel<<<dimgrid, dimblock>>>(source_array_d, result_array_d, source_row_size, source_size);
+  cu_sobel<<<dimgrid, dimblock>>>(source_array_d, result_array_d,
+                                  source_row_size, source_size);
   // transfer results back to host
   cudaMemcpy(result_array, result_array_d, sizeof(int) * dest_size,
              cudaMemcpyDeviceToHost);
