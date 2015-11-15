@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
        << information.height << endl;
 
   int size = information.width * information.height;
-  int **newData = (int *)malloc(size * sizeof(int));
+  int **newData = (int **)malloc(size * sizeof(int));
   clock_t gpu_start = clock();
   gpu_sobel(&data, newData, information.width, information.height);
   clock_t gpu_stop = clock();
