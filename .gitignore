@@ -26,7 +26,9 @@
 *.exe
 *.out
 *.app
-image-filter
+cpu-image-filter
+gpu-image-filter
+
 
 # Image Working Files
 sestonDiatom.bmp
