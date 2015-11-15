@@ -19,7 +19,7 @@ using namespace std;
 
 #pragma pack(1)
 typedef struct {
-	char id[2]; 
+	char id[2];
 	int file_size;
 	int reserved;
 	int offset;
@@ -29,13 +29,13 @@ typedef struct {
 typedef struct {
 	int header_size;
 	int width;
-	int height; 
-	unsigned short int color_planes; 
-	unsigned short int color_depth; 
-	unsigned int compression; 
+	int height;
+	unsigned short int color_planes;
+	unsigned short int color_depth;
+	unsigned int compression;
 	int image_size;
 	int xresolution;
-	int yresolution; 
+	int yresolution;
 	int num_colors;
 	int num_important_colors;
 } information_type;
@@ -77,8 +77,12 @@ int main(int argc, char* argv[])
 		padding = 4 - padding;
 
 	// extract image data, initialize vectors
-	for (row=0; row < information.height; row++) {
+	// pad row
+	data.push_back(vector <int>());
+	for (row=1; row <= information.height; row++) {
 		data.push_back (vector <int>());
+		// pad column
+		data[row].push_back(0);
 		for (col=0; col < information.width; col++) {
 			imageFile.read ((char *) tempData, 3 * sizeof(unsigned char));
 			data[row].push_back ((int) tempData[0]);
@@ -92,14 +96,25 @@ int main(int argc, char* argv[])
 
 // insert transformation code here
 // this code simply recreates the original Black-and-White image
-	for (row=0; row < information.height; row++) {
+	int x_0, x_1, x_2, x_3, x_5, x_6, x_7, x_8, sum_0, sum_1;
+	for (row=1; row < information.height; row++) {
 		newData.push_back (vector <int>());
-		for (col=0; col < information.width; col++) {
-			newData[row].push_back (data[row][col]);
+		for (col=1; col < information.width; col++) {
+			// newData[row].push_back (data[row][col]);
+
+			x_0 = data[row-1][col-1];
+			x_1 = data[row-1][col];
+			x_2 = data[row-1][col+1];
+			x_3 = data[row][col-1];
+			x_5 = data[row][col+1];
+			x_6 = data[row+1][col-1];
+			x_7 = data[row+1][col];
+			x_8 = data[row+1][col+1];
+			sum_0 = (x_0 + (2*x_1) + x_2) - (x_6 + (2*x_7) + x_8);
+			sum_1 = (x_2 + (2*x_5) + x_8) - (x_0 + (2*x_3) + x_6);
+			newData[row].push_back (sum_0 + sum_1);
 		}
 	}
-
-	
 
 	// write header to new image file
 	newImageFile.write ((char *) &header, sizeof(header_type));
@@ -126,4 +141,3 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
-
