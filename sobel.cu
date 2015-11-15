@@ -25,7 +25,7 @@ __global__ void cu_sobel(int *source_array_d, int *result_array_d,
   x = blockIdx.x * BLOCK_SIZE + threadIdx.x;
   // edge of matrix has zeros.  don't process
   bool top = x < source_row_size;
-  bool bottom = x > (size - source_row_size);
+  bool bottom = x > (source_size - source_row_size);
   bool left_edge = (x % source_row_size) == 0;
   bool right_edge = (x % (source_row_size + 1)) == 0;
   if (top == false && bottom == false && left_edge == false &&
@@ -65,9 +65,9 @@ extern "C" void gpu_sobel(int *source_array, int *result_array,
   dim3 dimblock(BLOCK_SIZE);
   dim3 dimgrid(ceil((double)dest_size / BLOCK_SIZE));
 
-  cu_sobel<<<dimgrid, dimblock>>>(source_array_d, result_array_d, );
+  cu_sobel<<<dimgrid, dimblock>>>(source_array_d, result_array_d, source_row_size, source_size);
   // transfer results back to host
-  cudaMemcpy(result_array, result_array_d, sizeof(int) * num_vectors,
+  cudaMemcpy(result_array, result_array_d, sizeof(int) * dest_size,
              cudaMemcpyDeviceToHost);
 
   // release the memory on the GPU

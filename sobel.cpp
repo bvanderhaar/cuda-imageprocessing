@@ -98,7 +98,6 @@ int main(int argc, char *argv[]) {
   clock_t gpu_stop = clock();
   double elapsed_gpu = double(gpu_stop - gpu_start) / (CLOCKS_PER_SEC / 1000);
 
-  std::cout << "GPU Calc Total: " << pu_dotproduct_result << std::endl;
   std::cout << "GPU Time Taken (msec): " << elapsed_gpu << std::endl;
   // write header to new image file
   newImageFile.write((char *)&header, sizeof(header_type));
