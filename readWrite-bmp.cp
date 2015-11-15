@@ -79,11 +79,13 @@ int main(int argc, char* argv[])
 	// extract image data, initialize vectors
 	for (row=0; row < information.height; row++) {
 		data.push_back (vector <int>());
+		// pad first column
 		data[row].push_back(0);
 		for (col=0; col < information.width; col++) {
 			imageFile.read ((char *) tempData, 3 * sizeof(unsigned char));
 			data[row].push_back ((int) tempData[0]);
 		}
+		// pad last column
 		data[row].push_back(0);
 		if (padding)
 			imageFile.read ((char *) tempData, padding * sizeof(unsigned char));
@@ -95,9 +97,6 @@ int main(int argc, char* argv[])
 	cout << imageFileName << ": " << information.width << " x " << information.height << endl;
 
 
-
-// insert transformation code here
-// this code simply recreates the original Black-and-White image
 	newData.push_back(vector<int>(information.width));
 	int x_0, x_1, x_2, x_3, x_5, x_6, x_7, x_8, sum_0, sum_1;
 	for (row=1; row < (information.height+1); row++) {
