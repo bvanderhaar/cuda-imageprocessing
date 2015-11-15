@@ -9,7 +9,7 @@
 #include <iostream>
 
 extern "C" void gpu_sobel(int *source_array, int *result_array,
-                          int src_row_size, int src_column_size);
+                          int dest_row_size, int dest_column_size);
 
 #pragma pack(1)
 typedef struct {
@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
        << information.height << endl;
 
   clock_t gpu_start = clock();
-  gpu_sobel(data, newData, src_row_size, src_column_size);
+  gpu_sobel(data, newData, information.width, information.height);
   clock_t gpu_stop = clock();
   double elapsed_gpu = double(gpu_stop - gpu_start) / (CLOCKS_PER_SEC / 1000);
 
