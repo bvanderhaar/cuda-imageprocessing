@@ -14,7 +14,7 @@
 #include <vector>
 #include <cmath>
 #include <ctime>
-#include <omp.h>
+//#include <omp.h>
 using namespace std;
 
 #pragma pack(1)
@@ -77,35 +77,33 @@ int main(int argc, char* argv[])
 		padding = 4 - padding;
 
 	// extract image data, initialize vectors
-	// pad row
-	data.push_back(vector <int>());
-	for (row=1; row <= information.height; row++) {
+	for (row=0; row < information.height; row++) {
 		data.push_back (vector <int>());
-		// pad column
 		data[row].push_back(0);
-		for (col=0; col <= information.width; col++) {
+		for (col=0; col < information.width; col++) {
 			imageFile.read ((char *) tempData, 3 * sizeof(unsigned char));
 			data[row].push_back ((int) tempData[0]);
-
 		}
-		// add padding
 		data[row].push_back(0);
 		if (padding)
 			imageFile.read ((char *) tempData, padding * sizeof(unsigned char));
 	}
-	// add padding
-	data.push_back(vector<int>());
+	// pad first row
+	data.insert(data.begin(), vector<int>(information.width + 2));
+	// pad last row
+	data.push_back(vector<int>(information.width + 2));
 	cout << imageFileName << ": " << information.width << " x " << information.height << endl;
 
 
 
 // insert transformation code here
 // this code simply recreates the original Black-and-White image
+	newData.push_back(vector<int>(information.width));
 	int x_0, x_1, x_2, x_3, x_5, x_6, x_7, x_8, sum_0, sum_1;
-	for (row=1; row < information.height; row++) {
+	for (row=1; row < (information.height+1); row++) {
 		newData.push_back (vector <int>());
-		for (col=1; col < information.width; col++) {
-			// newData[row].push_back (data[row][col]);
+		for (col=1; col < (information.width+1); col++) {
+			newData[row].push_back (data[row][col]);
 
 			x_0 = data[row-1][col-1];
 			x_1 = data[row-1][col];
