@@ -9,6 +9,7 @@
  #include <vector>
  #include <cmath>
  #include <ctime>
+ using namespace std;
 
 extern "C" void gpu_sobel(int *source_array, int *result_array,
                           int dest_row_size, int dest_column_size);
