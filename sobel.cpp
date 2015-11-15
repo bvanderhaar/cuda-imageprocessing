@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
   string imageFileName, newImageFileName;
   unsigned char tempData[3];
   int row, col, row_bytes, padding;
-  vector<vector<int>> data, newData;
+  vector<vector<int>> data;
 
   // prepare files
   cout << "Original imagefile? ";
@@ -96,8 +96,10 @@ int main(int argc, char *argv[]) {
   cout << imageFileName << ": " << information.width << " x "
        << information.height << endl;
 
+  int size = information.width * information.height;
+  int *newData = (int *)malloc(size * sizeof(int));
   clock_t gpu_start = clock();
-  gpu_sobel(data, newData, information.width, information.height);
+  gpu_sobel(&data, newData, information.width, information.height);
   clock_t gpu_stop = clock();
   double elapsed_gpu = double(gpu_stop - gpu_start) / (CLOCKS_PER_SEC / 1000);
 
