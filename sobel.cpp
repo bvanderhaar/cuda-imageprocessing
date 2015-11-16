@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
   int size = information.width * information.height;
   int **newData = (int **)malloc(size * sizeof(int *));
   clock_t gpu_start = clock();
-  gpu_sobel(data, newData, information.width, information.height);
+  gpu_sobel(data, newData, rows, column_size);
   clock_t gpu_stop = clock();
   double elapsed_gpu = double(gpu_stop - gpu_start) / (CLOCKS_PER_SEC / 1000);
 

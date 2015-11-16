@@ -1,12 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/*
- * In CUDA it is necessary to define block sizes
- * The grid of data that will be worked on is divided into blocks
- */
-#define BLOCK_SIZE 512
-
 #define gpuErrchk(ans)                                                         \
   { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code, const char *file, int line,
@@ -72,7 +66,9 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
   cudaMemcpy(l_source_array, source_array_d, sizeof(int) * source_size,
              cudaMemcpyHostToDevice);
 
-  int num_bytes_result = (src_column_size - 2) * (src_rows - 2) * sizeof(int);
+  int result_column_size = src_column_size - 2;
+  int result_row_size = src_rows - 2;
+  int num_bytes_result = result_column_size * result_column_size * sizeof(int);
   l_result_array = (int *)malloc(num_bytes_result);
   cudaMalloc((void **)&result_array_d, num_bytes_result);
   cudaMemcpy(l_result_array, source_array_d, num_bytes_result,
@@ -98,9 +94,10 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
              cudaMemcpyDeviceToHost);
 
   // de-linearize result array
-  for (row = 0; row < src_rows - 2; row++) {
-    for (col = 0; col < src_column_size - 2; col++) {
-      result_array[row][col] = l_result_array[row * src_column_size + col];
+  for (row = 0; row < result_row_size; row++) {
+    result_array[row] = (int *)malloc(result_column_size * sizeof(int));
+    for (col = 0; col < result_column_size; col++) {
+      result_array[row][col] = l_result_array[row * result_column_size + col];
     }
   }
 
