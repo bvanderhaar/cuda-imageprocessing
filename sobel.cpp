@@ -43,7 +43,6 @@ int main(int argc, char *argv[]) {
   string imageFileName, newImageFileName;
   unsigned char tempData[3];
   int row, col, row_bytes, padding;
-  vector<vector<int>> data;
 
   // prepare files
   cout << "Original imagefile? ";
