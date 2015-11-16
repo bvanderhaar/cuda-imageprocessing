@@ -29,6 +29,8 @@
 cpu-image-filter
 gpu-image-filter
 
+# Mac OS X
+.DS_Store
 
 # Image Working Files
 sestonDiatom.bmp
