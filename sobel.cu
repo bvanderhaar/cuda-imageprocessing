@@ -61,9 +61,9 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
       l_source_array[row * src_column_size + col] = source_array[row][col];
     }
   }
-  int *source_array_d = 0;
-  cudaMalloc((void **)&source_array_d, num_bytes_source);
-  cudaMemcpy(l_source_array, source_array_d, num_bytes_source,
+  int *l_source_array_d = 0;
+  cudaMalloc((void **)&l_source_array_d, num_bytes_source);
+  cudaMemcpy(l_source_array, l_source_array_d, num_bytes_source,
              cudaMemcpyHostToDevice);
 
   int result_column_size = src_column_size - 2;
@@ -104,6 +104,6 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
   }
 
   // release the memory on the GPU
-  cudaFree(source_array_d);
-  cudaFree(result_array_d);
+  cudaFree(l_source_array_d);
+  cudaFree(l_result_array_d);
 }
