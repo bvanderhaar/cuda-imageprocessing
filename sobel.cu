@@ -30,18 +30,18 @@ __global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
   bool right_edge = (col == (column_size - 1));
   if (top == false && bottom == false && left_edge == false &&
       right_edge == false) {
-    x_0 = source_array_d[(col - 1) * grid_width + (row - 1)];
-    x_1 = source_array_d[(col)*grid_width + (row - 1)];
-    x_2 = source_array_d[(col + 1) * grid_width + (row - 1)];
-    x_3 = source_array_d[(col - 1) * grid_width + (row)];
-    x_5 = source_array_d[(col + 1) * grid_width + (row)];
-    x_6 = source_array_d[(col - 1) * grid_width + (row + 1)];
-    x_7 = source_array_d[(col)*grid_width + (row + 1)];
-    x_8 = source_array_d[(col + 1) * grid_width + (row + 1)];
+    x_0 = l_source_array_d[(col - 1) * grid_width + (row - 1)];
+    x_1 = l_source_array_d[(col)*grid_width + (row - 1)];
+    x_2 = l_source_array_d[(col + 1) * grid_width + (row - 1)];
+    x_3 = l_source_array_d[(col - 1) * grid_width + (row)];
+    x_5 = l_source_array_d[(col + 1) * grid_width + (row)];
+    x_6 = l_source_array_d[(col - 1) * grid_width + (row + 1)];
+    x_7 = l_source_array_d[(col)*grid_width + (row + 1)];
+    x_8 = l_source_array_d[(col + 1) * grid_width + (row + 1)];
     sum_0 = (x_0 + (2 * x_1) + x_2) - (x_6 + (2 * x_7) + x_8);
     sum_1 = (x_2 + (2 * x_5) + x_8) - (x_0 + (2 * x_3) + x_6);
     // write new data onto smaller matrix
-    result_array_d[(col - 1) * (grid_width - 2) + (row - 1)] = sum_0 + sum_1;
+    l_result_array_d[(col - 1) * (grid_width - 2) + (row - 1)] = sum_0 + sum_1;
   }
 }
 
