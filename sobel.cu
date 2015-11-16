@@ -20,7 +20,7 @@ __global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
   int col = blockIdx.x * blockDim.x + threadIdx.x;
   int row = blockIdx.y * blockDim.y + threadIdx.y;
   // map the two 2D indices to a single linear, 1D index
-  int grid_width = gridDim.x * blockDim.x;
+  //int grid_width = gridDim.x * blockDim.x;
   // int index_source = col * grid_width + row;
 
   // edge of matrix has zeros.  don't process
@@ -30,18 +30,18 @@ __global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
   bool right_edge = (col == (column_size - 1));
   if (top == false && bottom == false && left_edge == false &&
       right_edge == false) {
-    x_0 = l_source_array_d[(row - 1) * grid_width + (col - 1)];
-    x_1 = l_source_array_d[(row - 1) * grid_width + (col)];
-    x_2 = l_source_array_d[(row - 1) * grid_width + (col + 1)];
-    x_3 = l_source_array_d[(row)*grid_width + (col - 1)];
-    x_5 = l_source_array_d[(row)*grid_width + (col + 1)];
-    x_6 = l_source_array_d[(row + 1) * grid_width + (col - 1)];
-    x_7 = l_source_array_d[(row + 1) * grid_width + (col)];
-    x_8 = l_source_array_d[(row + 1) * grid_width + (col + 1)];
+    x_0 = l_source_array_d[(row - 1) * column_size + (col - 1)];
+    x_1 = l_source_array_d[(row - 1) * column_size + (col)];
+    x_2 = l_source_array_d[(row - 1) * column_size + (col + 1)];
+    x_3 = l_source_array_d[(row)*column_size + (col - 1)];
+    x_5 = l_source_array_d[(row)*column_size + (col + 1)];
+    x_6 = l_source_array_d[(row + 1) * column_size + (col - 1)];
+    x_7 = l_source_array_d[(row + 1) * column_size + (col)];
+    x_8 = l_source_array_d[(row + 1) * column_size + (col + 1)];
     sum_0 = (x_0 + (2 * x_1) + x_2) - (x_6 + (2 * x_7) + x_8);
     sum_1 = (x_2 + (2 * x_5) + x_8) - (x_0 + (2 * x_3) + x_6);
     // write new data onto smaller matrix
-    l_result_array_d[(row - 1) * (grid_width - 2) + (col - 1)] = sum_0 + sum_1;
+    l_result_array_d[(row - 1) * (column_size - 2) + (col - 1)] = sum_0 + sum_1;
   }
 }
 
@@ -78,8 +78,8 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
 
   // create two dimensional 4x4 thread blocks
   dim3 block_size;
-  block_size.x = 4;
-  block_size.y = 4;
+  block_size.x = 3;
+  block_size.y = 3;
 
   // configure a two dimensional grid as well
   dim3 grid_size;
