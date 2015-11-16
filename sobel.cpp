@@ -11,8 +11,8 @@
 #include <ctime>
 using namespace std;
 
-extern "C" void gpu_sobel(int *source_array, int *result_array,
-                          int dest_row_size, int dest_column_size);
+extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
+                          int src_column_size);
 
 #pragma pack(1)
 typedef struct {
