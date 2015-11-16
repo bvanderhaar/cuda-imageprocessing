@@ -74,25 +74,30 @@ int main(int argc, char *argv[]) {
 
   int row_size = information.width + 2;
   int column_size = information.height + 2;
-
+  int src_size = row_size * column_size;
+  int **data = (int **)malloc(src_size * sizeof(int));
   // extract image data, initialize vectors
-  for (row = 0; row < information.height; row++) {
-    data.push_back(vector<int>());
-    // pad first column
-    data[row].push_back(0);
-    for (col = 0; col < information.width; col++) {
-      imageFile.read((char *)tempData, 3 * sizeof(unsigned char));
-      data[row].push_back((int)tempData[0]);
+  for (row = 1; row <= information.height; row++) {
+    for (col = 0; col <= information.width; col++) {
+      if (col == 0) {
+        data[row][0] = 0;
+      } else {
+        imageFile.read((char *)tempData, 3 * sizeof(unsigned char));
+        data[row][col] = ((int)tempData[0]);
+      }
     }
     // pad last column
-    data[row].push_back(0);
+    data[row][col + 1] = 0;
     if (padding)
       imageFile.read((char *)tempData, padding * sizeof(unsigned char));
   }
-  // pad first row
-  data.insert(data.begin(), vector<int>(information.width + 2));
-  // pad last row
-  data.push_back(vector<int>(information.width + 2));
+
+  // pad first & last row
+  for (col = 0; col < column_size; col++) {
+    data[0][col] = 0;
+    data[row_size - 1][col] = 0;
+  }
+
   cout << imageFileName << ": " << information.width << " x "
        << information.height << endl;
 

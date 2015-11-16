@@ -44,8 +44,6 @@ int main(int argc, char *argv[]) {
   string imageFileName, newImageFileName;
   unsigned char tempData[3];
   int row, col, row_bytes, padding;
-  vector<vector<int>> data, newData;
-
   // prepare files
   cout << "Original imagefile? ";
   cin >> imageFileName;
@@ -74,46 +72,72 @@ int main(int argc, char *argv[]) {
     padding = 4 - padding;
 
   // extract image data, initialize vectors
-  for (row = 0; row < information.height; row++) {
-    data.push_back(vector<int>());
-    // pad first column
-    data[row].push_back(0);
-    for (col = 0; col < information.width; col++) {
-      imageFile.read((char *)tempData, 3 * sizeof(unsigned char));
-      data[row].push_back((int)tempData[0]);
+  int rows = information.height + 2;
+  int column_size = information.width + 2;
+  int src_size = rows * column_size;
+  int **data = (int **)malloc(src_size * sizeof(int *));
+  // extract image data, initialize vectors
+  for (row = 1; row <= information.height; row++) {
+    data[row] = (int *)malloc(column_size * sizeof(int));
+    for (col = 0; col <= information.width; col++) {
+      if (col == 0) {
+        data[row][0] = 0;
+      } else {
+        imageFile.read((char *)tempData, 3 * sizeof(unsigned char));
+        data[row][col] = ((int)tempData[0]);
+      }
     }
+    std::cout << "done processing row " << row << std::endl;
     // pad last column
-    data[row].push_back(0);
+    data[row][col + 1] = 0;
     if (padding)
       imageFile.read((char *)tempData, padding * sizeof(unsigned char));
   }
-  // pad first row
-  data.insert(data.begin(), vector<int>(information.width + 2));
-  // pad last row
-  data.push_back(vector<int>(information.width + 2));
-  cout << imageFileName << ": " << information.width << " x "
-       << information.height << endl;
 
-  newData.push_back(vector<int>(information.width));
+  std::cout << "done processing main image" << std::endl;
+
+  // pad first & last row
+  int last_row = rows - 1;
+  data[0] = (int *)malloc(column_size * sizeof(int));
+  data[last_row] = (int *)malloc(column_size * sizeof(int));
+  for (col = 0; col < column_size; col++) {
+    data[0][col] = 0;
+    data[rows - 1][col] = 0;
+  }
+  std::cout << imageFileName << ": " << information.width << " x "
+            << information.height << std::endl;
+
+  int dest_size = information.width * information.height;
+  int **newData = (int **)malloc(dest_size * sizeof(int *));
   int x_0, x_1, x_2, x_3, x_5, x_6, x_7, x_8, sum_0, sum_1;
   for (row = 1; row < (information.height + 1); row++) {
-    newData.push_back(vector<int>());
+    newData[row - 1] = (int *)malloc(information.width * sizeof(int));
     for (col = 1; col < (information.width + 1); col++) {
-      newData[row].push_back(data[row][col]);
+      // std::cout << "row " << row << " col " << col << std::endl;
+      bool top = (row == 0);
+      bool bottom = (row == (rows - 1));
+      bool left_edge = (col == 0);
+      bool right_edge = (col == (column_size - 1));
+      if (top == false && bottom == false && left_edge == false &&
+          right_edge == false) {
+        // newData[row].push_back(data[row][col]);
+        x_0 = data[row - 1][col - 1];
+        x_1 = data[row - 1][col];
+        x_2 = data[row - 1][col + 1];
+        x_3 = data[row][col - 1];
+        x_5 = data[row][col + 1];
+        x_6 = data[row + 1][col - 1];
+        x_7 = data[row + 1][col];
+        x_8 = data[row + 1][col + 1];
+        sum_0 = (x_0 + (2 * x_1) + x_2) - (x_6 + (2 * x_7) + x_8);
+        sum_1 = (x_2 + (2 * x_5) + x_8) - (x_0 + (2 * x_3) + x_6);
 
-      x_0 = data[row - 1][col - 1];
-      x_1 = data[row - 1][col];
-      x_2 = data[row - 1][col + 1];
-      x_3 = data[row][col - 1];
-      x_5 = data[row][col + 1];
-      x_6 = data[row + 1][col - 1];
-      x_7 = data[row + 1][col];
-      x_8 = data[row + 1][col + 1];
-      sum_0 = (x_0 + (2 * x_1) + x_2) - (x_6 + (2 * x_7) + x_8);
-      sum_1 = (x_2 + (2 * x_5) + x_8) - (x_0 + (2 * x_3) + x_6);
-      newData[row].push_back(sum_0 + sum_1);
+        // write new data onto smaller matrix
+        newData[row - 1][col - 1] = sum_0 + sum_1;
+      }
     }
   }
+
   std::cout << "finished iterating old data" << std::endl;
 
   // write header to new image file
