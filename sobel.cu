@@ -19,57 +19,90 @@ inline void gpuAssert(cudaError_t code, const char *file, int line,
   }
 }
 
-__global__ void cu_sobel(int *source_array_d, int *result_array_d,
-                         int source_row_size, int source_size) {
+__global__ void cu_sobel(int *source_array_d, int *result_array_d, int rows,
+                         int column_size) {
   int x, x_0, x_1, x_2, x_3, x_5, x_6, x_7, x_8, sum_0, sum_1;
-  x = blockIdx.x * BLOCK_SIZE + threadIdx.x;
+  // x = blockIdx.x * BLOCK_SIZE + threadIdx.x;
+  int row = blockIdx.x * blockDim.x + threadIdx.x;
+  int col = blockIdx.y * blockDim.y + threadIdx.y;
+  // map the two 2D indices to a single linear, 1D index
+  int grid_width = gridDim.x * blockDim.x;
+  int index_source = col * grid_width + row;
+
   // edge of matrix has zeros.  don't process
-  bool top = x < source_row_size;
-  bool bottom = x > (source_size - source_row_size);
-  bool left_edge = (x % source_row_size) == 0;
-  bool right_edge = (x % (source_row_size + 1)) == 0;
+  bool top = (row == 0);
+  bool bottom = (row == (rows - 1));
+  bool left_edge = (col == 0);
+  bool right_edge = (col == (column_size - 1));
   if (top == false && bottom == false && left_edge == false &&
       right_edge == false) {
-    x_0 = source_array_d[x - row_size - 1];
-    x_1 = source_array_d[x - row_size];
-    x_2 = source_array_d[x - row_size + 1];
-    x_3 = source_array_d[x - 1];
-    x_5 = source_array_d[x + 1];
-    x_6 = source_array_d[x + row_size - 1];
-    x_7 = source_array_d[x + row_size];
-    x_8 = source_array_d[x + row_size + 1];
+    x_0 = source_array_d[(col - 1) * grid_width + (row - 1)];
+    x_1 = source_array_d[(col)*grid_width + (row - 1)];
+    x_2 = source_array_d[(col + 1) * grid_width + (row - 1)];
+    x_3 = source_array_d[(col - 1) * grid_width + (row)];
+    x_5 = source_array_d[(col + 1) * grid_width + (row)];
+    x_6 = source_array_d[(col - 1) * grid_width + (row + 1)];
+    x_7 = source_array_d[(col)*grid_width + (row + 1)];
+    x_8 = source_array_d[(col + 1) * grid_width + (row + 1)];
     sum_0 = (x_0 + (2 * x_1) + x_2) - (x_6 + (2 * x_7) + x_8);
     sum_1 = (x_2 + (2 * x_5) + x_8) - (x_0 + (2 * x_3) + x_6);
-    result_array_d[x] = (sum_0 + sum_1);
+    // write new data onto smaller matrix
+    result_array_d[(col - 1) * (grid_width - 2) + (row - 1)] = sum_0 + sum_1;
   }
 }
 
 // Called from driver program.  Handles running GPU calculation
-extern "C" void gpu_sobel(int *source_array, int *result_array,
-                          int dest_row_size, int dest_column_size) {
-  // while confusing, source is 2 cols + 2 rows larger than dest for 0 padding
-  int dest_size = dest_row_size * dest_column_size;
-  int source_size = (dest_row_size + 2) * (dest_column_size + 2);
-  int source_row_size = dest_row_size + 2;
+extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
+                          int src_column_size) {
 
-  // allocate space in the device
+  int num_elements_x = src_column_size;
+  int num_elements_y = src_rows;
+  int num_bytes_source = num_elements_x * num_elements_y * sizeof(int);
+
+  // linear-ize source array
+  int *l_source_array = 0;
+  l_source_array = (int *)malloc(num_bytes);
+  for (row = 0; row < src_rows; row++) {
+    for (col = 0; col < src_column_size; col++) {
+      l_source_array[row * src_column_size + col] = source_array[row][col];
+    }
+  }
+
   cudaMalloc((void **)&source_array_d, sizeof(int) * source_size);
-  cudaMalloc((void **)&result_array_d, sizeof(int) * dest_size);
-
-  cudaMemcpy(source_array, source_array_d, sizeof(int) * source_size,
-             cudaMemcpyHostToDevice);
-  cudaMemcpy(result_array, result_array_d, sizeof(int) * dest_size,
+  cudaMemcpy(l_source_array, source_array_d, sizeof(int) * source_size,
              cudaMemcpyHostToDevice);
 
-  // set execution configuration
-  dim3 dimblock(BLOCK_SIZE);
-  dim3 dimgrid(ceil((double)dest_size / BLOCK_SIZE));
+  int num_bytes_result = (src_column_size - 2) * (src_rows - 2) * sizeof(int);
+  l_result_array = (int *)malloc(num_bytes_result);
+  cudaMalloc((void **)&result_array_d, num_bytes_result);
+  cudaMemcpy(l_result_array, source_array_d, num_bytes_result,
+             cudaMemcpyHostToDevice);
 
-  cu_sobel<<<dimgrid, dimblock>>>(source_array_d, result_array_d,
-                                  source_row_size, source_size);
+  // create two dimensional 4x4 thread blocks
+  dim3 block_size;
+  block_size.x = 4;
+  block_size.y = 4;
+
+  // configure a two dimensional grid as well
+  dim3 grid_size;
+  grid_size.x = num_elements_x / block_size.x;
+  grid_size.y = num_elements_y / block_size.y;
+
+  // grid_size & block_size are passed as arguments to the triple chevrons as
+  // usual
+  cu_sobel<<<grid_size, block_size>>>(source_array_d, result_array_d, src_rows,
+                                      src_column_size);
+
   // transfer results back to host
-  cudaMemcpy(result_array, result_array_d, sizeof(int) * dest_size,
+  cudaMemcpy(l_result_array, result_array_d, num_bytes_result,
              cudaMemcpyDeviceToHost);
+
+  // de-linearize result array
+  for (row = 0; row < src_rows - 2; row++) {
+    for (col = 0; col < src_column_size - 2; col++) {
+      result_array[row][col] = l_result_array[row * src_column_size + col];
+    }
+  }
 
   // release the memory on the GPU
   cudaFree(source_array_d);

@@ -76,7 +76,6 @@ int main(int argc, char *argv[]) {
   int column_size = information.width + 2;
   int src_size = rows * column_size;
   int **data = (int **)malloc(src_size * sizeof(int *));
-  // extract image data, initialize vectors
   for (row = 1; row <= information.height; row++) {
     data[row] = (int *)malloc(column_size * sizeof(int));
     for (col = 0; col <= information.width; col++) {
@@ -87,14 +86,11 @@ int main(int argc, char *argv[]) {
         data[row][col] = ((int)tempData[0]);
       }
     }
-    std::cout << "done processing row " << row << std::endl;
     // pad last column
     data[row][col + 1] = 0;
     if (padding)
       imageFile.read((char *)tempData, padding * sizeof(unsigned char));
   }
-
-  std::cout << "done processing main image" << std::endl;
 
   // pad first & last row
   int last_row = rows - 1;
@@ -113,14 +109,12 @@ int main(int argc, char *argv[]) {
   for (row = 1; row < (information.height + 1); row++) {
     newData[row - 1] = (int *)malloc(information.width * sizeof(int));
     for (col = 1; col < (information.width + 1); col++) {
-      // std::cout << "row " << row << " col " << col << std::endl;
       bool top = (row == 0);
       bool bottom = (row == (rows - 1));
       bool left_edge = (col == 0);
       bool right_edge = (col == (column_size - 1));
       if (top == false && bottom == false && left_edge == false &&
           right_edge == false) {
-        // newData[row].push_back(data[row][col]);
         x_0 = data[row - 1][col - 1];
         x_1 = data[row - 1][col];
         x_2 = data[row - 1][col + 1];
@@ -131,14 +125,11 @@ int main(int argc, char *argv[]) {
         x_8 = data[row + 1][col + 1];
         sum_0 = (x_0 + (2 * x_1) + x_2) - (x_6 + (2 * x_7) + x_8);
         sum_1 = (x_2 + (2 * x_5) + x_8) - (x_0 + (2 * x_3) + x_6);
-
         // write new data onto smaller matrix
         newData[row - 1][col - 1] = sum_0 + sum_1;
       }
     }
   }
-
-  std::cout << "finished iterating old data" << std::endl;
 
   // write header to new image file
   newImageFile.write((char *)&header, sizeof(header_type));

@@ -72,12 +72,13 @@ int main(int argc, char *argv[]) {
   if (padding)
     padding = 4 - padding;
 
-  int row_size = information.width + 2;
-  int column_size = information.height + 2;
-  int src_size = row_size * column_size;
-  int **data = (int **)malloc(src_size * sizeof(int));
   // extract image data, initialize vectors
+  int rows = information.height + 2;
+  int column_size = information.width + 2;
+  int src_size = rows * column_size;
+  int **data = (int **)malloc(src_size * sizeof(int *));
   for (row = 1; row <= information.height; row++) {
+    data[row] = (int *)malloc(column_size * sizeof(int));
     for (col = 0; col <= information.width; col++) {
       if (col == 0) {
         data[row][0] = 0;
@@ -93,18 +94,20 @@ int main(int argc, char *argv[]) {
   }
 
   // pad first & last row
+  int last_row = rows - 1;
+  data[0] = (int *)malloc(column_size * sizeof(int));
+  data[last_row] = (int *)malloc(column_size * sizeof(int));
   for (col = 0; col < column_size; col++) {
     data[0][col] = 0;
-    data[row_size - 1][col] = 0;
+    data[rows - 1][col] = 0;
   }
-
-  cout << imageFileName << ": " << information.width << " x "
-       << information.height << endl;
+  std::cout << imageFileName << ": " << information.width << " x "
+            << information.height << std::endl;
 
   int size = information.width * information.height;
-  int **newData = (int **)malloc(size * sizeof(int));
+  int **newData = (int **)malloc(size * sizeof(int *));
   clock_t gpu_start = clock();
-  gpu_sobel(&data, newData, information.width, information.height);
+  gpu_sobel(data, newData, information.width, information.height);
   clock_t gpu_stop = clock();
   double elapsed_gpu = double(gpu_stop - gpu_start) / (CLOCKS_PER_SEC / 1000);
 
