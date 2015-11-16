@@ -15,13 +15,13 @@ inline void gpuAssert(cudaError_t code, const char *file, int line,
 
 __global__ void cu_sobel(int *source_array_d, int *result_array_d, int rows,
                          int column_size) {
-  int x, x_0, x_1, x_2, x_3, x_5, x_6, x_7, x_8, sum_0, sum_1;
+  int x_0, x_1, x_2, x_3, x_5, x_6, x_7, x_8, sum_0, sum_1;
   // x = blockIdx.x * BLOCK_SIZE + threadIdx.x;
   int row = blockIdx.x * blockDim.x + threadIdx.x;
   int col = blockIdx.y * blockDim.y + threadIdx.y;
   // map the two 2D indices to a single linear, 1D index
   int grid_width = gridDim.x * blockDim.x;
-  int index_source = col * grid_width + row;
+  // int index_source = col * grid_width + row;
 
   // edge of matrix has zeros.  don't process
   bool top = (row == 0);
@@ -48,30 +48,32 @@ __global__ void cu_sobel(int *source_array_d, int *result_array_d, int rows,
 // Called from driver program.  Handles running GPU calculation
 extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
                           int src_column_size) {
-
+  int row, col;
   int num_elements_x = src_column_size;
   int num_elements_y = src_rows;
-  int num_bytes_source = num_elements_x * num_elements_y * sizeof(int);
+  int num_bytes_source = src_column_size * src_rows * sizeof(int);
 
   // linear-ize source array
   int *l_source_array = 0;
-  l_source_array = (int *)malloc(num_bytes);
+  l_source_array = (int *)malloc(num_bytes_source);
   for (row = 0; row < src_rows; row++) {
     for (col = 0; col < src_column_size; col++) {
       l_source_array[row * src_column_size + col] = source_array[row][col];
     }
   }
-
-  cudaMalloc((void **)&source_array_d, sizeof(int) * source_size);
-  cudaMemcpy(l_source_array, source_array_d, sizeof(int) * source_size,
+  int *source_array_d = 0;
+  cudaMalloc((void **)&source_array_d, num_bytes_source);
+  cudaMemcpy(l_source_array, source_array_d, num_bytes_source,
              cudaMemcpyHostToDevice);
 
   int result_column_size = src_column_size - 2;
   int result_row_size = src_rows - 2;
   int num_bytes_result = result_column_size * result_column_size * sizeof(int);
+  int *l_result_array = 0;
+  int *l_result_array_d = 0;
   l_result_array = (int *)malloc(num_bytes_result);
-  cudaMalloc((void **)&result_array_d, num_bytes_result);
-  cudaMemcpy(l_result_array, source_array_d, num_bytes_result,
+  cudaMalloc((void **)&l_result_array_d, num_bytes_result);
+  cudaMemcpy(l_result_array, l_result_array_d, num_bytes_result,
              cudaMemcpyHostToDevice);
 
   // create two dimensional 4x4 thread blocks
@@ -86,11 +88,11 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
 
   // grid_size & block_size are passed as arguments to the triple chevrons as
   // usual
-  cu_sobel<<<grid_size, block_size>>>(source_array_d, result_array_d, src_rows,
-                                      src_column_size);
+  cu_sobel<<<grid_size, block_size>>>(l_source_array_d, l_result_array_d,
+                                      src_rows, src_column_size);
 
   // transfer results back to host
-  cudaMemcpy(l_result_array, result_array_d, num_bytes_result,
+  cudaMemcpy(l_result_array, l_result_array_d, num_bytes_result,
              cudaMemcpyDeviceToHost);
 
   // de-linearize result array
