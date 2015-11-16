@@ -13,7 +13,7 @@ inline void gpuAssert(cudaError_t code, const char *file, int line,
   }
 }
 
-__global__ void cu_sobel(int *source_array_d, int *result_array_d, int rows,
+__global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
                          int column_size) {
   int x_0, x_1, x_2, x_3, x_5, x_6, x_7, x_8, sum_0, sum_1;
   // x = blockIdx.x * BLOCK_SIZE + threadIdx.x;
