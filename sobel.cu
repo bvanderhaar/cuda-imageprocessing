@@ -17,8 +17,8 @@ __global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
                          int column_size) {
   int x_0, x_1, x_2, x_3, x_5, x_6, x_7, x_8, sum_0, sum_1;
   // x = blockIdx.x * BLOCK_SIZE + threadIdx.x;
-  int row = blockIdx.x * blockDim.x + threadIdx.x;
-  int col = blockIdx.y * blockDim.y + threadIdx.y;
+  int col = blockIdx.x * blockDim.x + threadIdx.x;
+  int row = blockIdx.y * blockDim.y + threadIdx.y;
   // map the two 2D indices to a single linear, 1D index
   column_size = gridDim.x * blockDim.x;
   // int index_source = col * grid_width + row;
