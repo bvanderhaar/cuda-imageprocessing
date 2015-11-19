@@ -20,7 +20,7 @@ __global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
   int col = blockIdx.x * blockDim.x + threadIdx.x;
   int row = blockIdx.y * blockDim.y + threadIdx.y;
   // map the two 2D indices to a single linear, 1D index
-  //int grid_width = gridDim.x * blockDim.x;
+  // int grid_width = gridDim.x * blockDim.x;
   // int index_source = col * grid_width + row;
 
   // edge of matrix has zeros.  don't process
@@ -41,7 +41,8 @@ __global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
     sum_0 = (x_0 + (2 * x_1) + x_2) - (x_6 + (2 * x_7) + x_8);
     sum_1 = (x_2 + (2 * x_5) + x_8) - (x_0 + (2 * x_3) + x_6);
     // write new data onto smaller matrix
-    l_result_array_d[(row - 1) * (column_size - 2) + (col - 1)] = sum_0 + sum_1;
+    l_result_array_d[((row - 1) * (column_size - 2)) + (col - 1)] =
+        sum_0 + sum_1;
   }
 }
 
@@ -99,7 +100,7 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
   for (row = 0; row < result_row_size; row++) {
     result_array[row] = (int *)malloc(result_column_size * sizeof(int));
     for (col = 0; col < result_column_size; col++) {
-      result_array[row][col] = l_result_array[row * result_column_size + col];
+      result_array[row][col] = l_result_array[(row * result_column_size) + col];
     }
   }
 
