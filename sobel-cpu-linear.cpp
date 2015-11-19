@@ -61,16 +61,15 @@ int main(int argc, char *argv[]) {
   unsigned char tempData[3];
   int row, col, row_bytes, padding;
   // prepare files
-  std::cout << "Original imagefile? ";
-  std::cin >> imageFileName;
+  imageFileName = argv[1];
   ifstream imageFile;
   imageFile.open(imageFileName.c_str(), ios::binary);
   if (!imageFile) {
-    cerr << "file not found" << endl;
+    std::cerr << "file not found" << std::endl;
     exit(-1);
   }
-  cout << "New imagefile name? ";
-  std::cin >> newImageFileName;
+  // std::cout << "New imagefile name? ";
+  newImageFileName = argv[2];
   ofstream newImageFile;
   newImageFile.open(newImageFileName.c_str(), ios::binary);
 

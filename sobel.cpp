@@ -45,16 +45,16 @@ int main(int argc, char *argv[]) {
   int row, col, row_bytes, padding;
 
   // prepare files
-  cout << "Original imagefile? ";
-  cin >> imageFileName;
+  // cout << "Original imagefile? ";
+  imageFileName = argv[1];
   ifstream imageFile;
   imageFile.open(imageFileName.c_str(), ios::binary);
   if (!imageFile) {
     cerr << "file not found" << endl;
     exit(-1);
   }
-  cout << "New imagefile name? ";
-  cin >> newImageFileName;
+  // std::cout << "New imagefile name? ";
+  newImageFileName = argv[2];
   ofstream newImageFile;
   newImageFile.open(newImageFileName.c_str(), ios::binary);
 
