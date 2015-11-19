@@ -20,7 +20,7 @@ __global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
   int row = blockIdx.x * blockDim.x + threadIdx.x;
   int col = blockIdx.y * blockDim.y + threadIdx.y;
   // map the two 2D indices to a single linear, 1D index
-  // int grid_width = gridDim.x * blockDim.x;
+  column_size = gridDim.x * blockDim.x;
   // int index_source = col * grid_width + row;
 
   // edge of matrix has zeros.  don't process
