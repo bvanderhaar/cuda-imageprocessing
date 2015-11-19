@@ -79,8 +79,8 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
 
   // create two dimensional 4x4 thread blocks
   dim3 block_size;
-  block_size.x = 3;
-  block_size.y = 3;
+  block_size.x = 32;
+  block_size.y = 32;
 
   // configure a two dimensional grid as well
   dim3 grid_size;
