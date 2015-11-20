@@ -79,7 +79,7 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
              cudaMemcpyHostToDevice);
 
 
-  dim3 block_size(column_size);
+  dim3 block_size(src_column_size);
   dim3 grid_size(src_rows);
 
   // grid_size & block_size are passed as arguments to the triple chevrons as
