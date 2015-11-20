@@ -84,7 +84,7 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
   // block size should be adjusted to the problem size for performance
   dim3 block_size(src_column_size);
   // grid size should limit the amount of work to be completed
-  dim3 grid_size(src_rows);
+  dim3 grid_size(src_rows * src_column_size);
 
   // grid_size & block_size are passed as arguments to the triple chevrons as
   // usual
