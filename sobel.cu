@@ -19,15 +19,7 @@ __global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
   int pos = blockIdx.x * column_size + threadIdx.x;
   int row = pos / column_size;
   int col = pos % column_size;
-  // int col = blockIdx.x * threadIdx.x;
-  // int row = blockIdx.y * blockDim.y + threadIdx.y;
-  // map the two 2D indices to a single linear, 1D index
-  // column_size = gridDim.x * blockDim.x;
-  // int index_source = col * grid_width + row;
 
-  // edge of matrix has zeros.  don't process
-  printf("row: %i col: %i ", row, col);
-  printf(" block: %i thread: %i \n", blockIdx.x, threadIdx.x);
   bool top = (row == 0);
   bool bottom = (row == (rows - 1));
   bool left_edge = (col == 0);
@@ -45,7 +37,6 @@ __global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
     sum_0 = (x_0 + (2 * x_1) + x_2) - (x_6 + (2 * x_7) + x_8);
     sum_1 = (x_2 + (2 * x_5) + x_8) - (x_0 + (2 * x_3) + x_6);
     // write new data onto smaller matrix
-    __syncthreads();
     l_result_array_d[((row - 1) * (column_size - 2)) + (col - 1)] =
         sum_0 + sum_1;
   }
@@ -58,17 +49,14 @@ extern "C" void gpu_sobel(int *l_source_array, int *l_result_array,
   int *l_source_array_d;
   int *l_result_array_d;
 
-  gpuErrchk(cudaMalloc((void **)&l_source_array_d, num_bytes_source));
-  gpuErrchk(cudaMemcpy(l_source_array_d, l_source_array, num_bytes_source,
-                       cudaMemcpyHostToDevice));
+  cudaMalloc((void **)&l_source_array_d, num_bytes_source);
+  cudaMemcpy(l_source_array_d, l_source_array, num_bytes_source,
+                       cudaMemcpyHostToDevice);
 
   int result_column_size = src_column_size - 2;
   int result_row_size = src_rows - 2;
   int num_bytes_result = result_column_size * result_row_size * sizeof(int);
-  //l_result_array = (int *)malloc(num_bytes_result);
-  gpuErrchk(cudaMalloc((void **)&l_result_array_d, num_bytes_result));
-  //gpuErrchk(cudaMemcpy(l_result_array, l_result_array_d, num_bytes_result,
-  //                     cudaMemcpyHostToDevice));
+  cudaMalloc((void **)&l_result_array_d, num_bytes_result);
 
   // block size should be adjusted to the problem size for performance
   dim3 block_size(src_column_size);
