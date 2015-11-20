@@ -60,7 +60,7 @@ extern "C" void gpu_sobel(int *l_source_array, int *l_result_array,
   int *l_result_array_d;
 
   gpuErrchk(cudaMalloc((void **)&l_source_array_d, num_bytes_source));
-  gpuErrchk(cudaMemcpy(l_source_array, &l_source_array_d, num_bytes_source,
+  gpuErrchk(cudaMemcpy(l_source_array_d, &l_source_array, num_bytes_source,
                        cudaMemcpyHostToDevice));
 
   int result_column_size = src_column_size - 2;
@@ -68,8 +68,8 @@ extern "C" void gpu_sobel(int *l_source_array, int *l_result_array,
   int num_bytes_result = result_column_size * result_row_size * sizeof(int);
   //l_result_array = (int *)malloc(num_bytes_result);
   gpuErrchk(cudaMalloc((void **)&l_result_array_d, num_bytes_result));
-  gpuErrchk(cudaMemcpy(l_result_array, &l_result_array_d, num_bytes_result,
-                       cudaMemcpyHostToDevice));
+  //gpuErrchk(cudaMemcpy(l_result_array, l_result_array_d, num_bytes_result,
+  //                     cudaMemcpyHostToDevice));
 
   // block size should be adjusted to the problem size for performance
   dim3 block_size(src_column_size);
