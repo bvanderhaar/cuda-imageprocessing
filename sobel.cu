@@ -63,6 +63,7 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
   l_source_array = (int *)malloc(num_bytes_source);
   for (row = 0; row < src_rows; row++) {
     for (col = 0; col < src_column_size; col++) {
+      printf("linear array pos: %i\n", row * src_column_size + col);
       l_source_array[row * src_column_size + col] = source_array[row][col];
     }
   }
