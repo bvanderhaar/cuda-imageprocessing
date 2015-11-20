@@ -99,18 +99,39 @@ int main(int argc, char *argv[]) {
     data[0][col] = 0;
     data[rows - 1][col] = 0;
   }
-  std::cout << imageFileName <<  std:: endl <<
-    "columns (x): " << information.width <<
-    " rows (y): "   << information.height << std::endl;
+  std::cout << imageFileName << std::endl
+            << "columns (x): " << information.width
+            << " rows (y): " << information.height << std::endl;
 
   int size = information.width * information.height;
   int **newData = (int **)malloc(size * sizeof(int *));
+  // linear-ize source array
+  int dest_size = information.width * information.height;
+  int *l_source_array = 0;
+  l_source_array = new int[src_size];
+  for (row = 0; row < src_rows; row++) {
+    for (col = 0; col < src_column_size; col++) {
+      l_source_array[row * src_column_size + col] = data[row][col];
+    }
+  }
+  int *l_result_array = 0;
+  l_result_array = new int[size];
   clock_t gpu_start = clock();
-  gpu_sobel(data, newData, rows, column_size);
+  gpu_sobel(l_source_array, l_result_array, rows, column_size);
   clock_t gpu_stop = clock();
   double elapsed_gpu = double(gpu_stop - gpu_start) / (CLOCKS_PER_SEC / 1000);
 
   std::cout << "GPU Time Taken (msec): " << elapsed_gpu << std::endl;
+
+  // de-linearize result array
+  int **newData = (int **)malloc(dest_size * sizeof(int *));
+  for (row = 0; row < result_rows; row++) {
+    newData[row] = new int[result_column_size];
+    for (col = 0; col < result_column_size; col++) {
+      newData[row][col] = l_result_array[(row * result_column_size) + col];
+    }
+  }
+
   // write header to new image file
   newImageFile.write((char *)&header, sizeof(header_type));
   newImageFile.write((char *)&information, sizeof(information_type));

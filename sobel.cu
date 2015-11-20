@@ -17,7 +17,7 @@ __global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
                          int column_size) {
   int x_0, x_1, x_2, x_3, x_5, x_6, x_7, x_8, sum_0, sum_1;
   int pos = blockIdx.x * column_size + threadIdx.x;
-  int row = pos/column_size;
+  int row = pos / column_size;
   int col = pos % column_size;
   // int col = blockIdx.x * threadIdx.x;
   // int row = blockIdx.y * blockDim.y + threadIdx.y;
@@ -52,25 +52,15 @@ __global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
 }
 
 // Called from driver program.  Handles running GPU calculation
-extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
-                          int src_column_size) {
+extern "C" void gpu_sobel(int *l_source_array, int *l_result_array,
+                          int src_rows, int src_column_size) {
   int row, col;
   int num_bytes_source = src_column_size * src_rows * sizeof(int);
-  printf("num_bytes_source: %i\n", num_bytes_source);
-
-  // linear-ize source array
-  int *l_source_array = 0;
-  l_source_array = (int *)malloc(num_bytes_source);
-  for (row = 0; row < src_rows; row++) {
-    for (col = 0; col < src_column_size; col++) {
-      printf("linear array pos: %i\n", row * src_column_size + col);
-      l_source_array[row * src_column_size + col] = source_array[row][col];
-    }
-  }
   int *l_source_array_d;
+
   gpuErrchk(cudaMalloc((void **)&l_source_array_d, num_bytes_source));
-  cudaMemcpy(l_source_array, l_source_array_d, num_bytes_source,
-             cudaMemcpyHostToDevice);
+  gpuErrchk(cudaMemcpy(l_source_array, l_source_array_d, num_bytes_source,
+                       cudaMemcpyHostToDevice));
 
   int result_column_size = src_column_size - 2;
   int result_row_size = src_rows - 2;
@@ -80,8 +70,7 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
   l_result_array = (int *)malloc(num_bytes_result);
   gpuErrchk(cudaMalloc((void **)&l_result_array_d, num_bytes_result));
   gpuErrchk(cudaMemcpy(l_result_array, l_result_array_d, num_bytes_result,
-             cudaMemcpyHostToDevice));
-
+                       cudaMemcpyHostToDevice));
 
   // block size should be adjusted to the problem size for performance
   dim3 block_size(src_column_size);
@@ -95,15 +84,7 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
 
   // transfer results back to host
   gpuErrchk(cudaMemcpy(l_result_array, l_result_array_d, num_bytes_result,
-             cudaMemcpyDeviceToHost));
-
-  // de-linearize result array
-  for (row = 0; row < result_row_size; row++) {
-    result_array[row] = (int *)malloc(result_column_size * sizeof(int));
-    for (col = 0; col < result_column_size; col++) {
-      result_array[row][col] = l_result_array[(row * result_column_size) + col];
-    }
-  }
+                       cudaMemcpyDeviceToHost));
 
   // release the memory on the GPU
   cudaFree(l_source_array_d);
