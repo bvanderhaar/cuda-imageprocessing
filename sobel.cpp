@@ -95,9 +95,9 @@ int main(int argc, char *argv[]) {
   int last_row = src_rows - 1;
   data[0] = (int *)malloc(src_column_size * sizeof(int));
   data[last_row] = (int *)malloc(src_column_size * sizeof(int));
-  for (col = 0; col < column_size; col++) {
+  for (col = 0; col < src_column_size; col++) {
     data[0][col] = 0;
-    data[rows - 1][col] = 0;
+    data[src_rows - 1][col] = 0;
   }
   std::cout << imageFileName << std::endl
             << "columns (x): " << information.width
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
     }
   }
   int *l_result_array = 0;
-  l_result_array = new int[size];
+  l_result_array = new int[dest_size];
   clock_t gpu_start = clock();
   gpu_sobel(l_source_array, l_result_array, src_rows, src_column_size);
   clock_t gpu_stop = clock();
