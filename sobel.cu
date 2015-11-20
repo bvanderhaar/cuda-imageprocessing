@@ -65,7 +65,7 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
       l_source_array[row * src_column_size + col] = source_array[row][col];
     }
   }
-  int *l_source_array_d = 0;
+  int *l_source_array_d;
   gpuErrchk(cudaMalloc((void **)&l_source_array_d, num_bytes_source));
   gpuErrchk(cudaMemcpy(l_source_array, l_source_array_d, num_bytes_source,
              cudaMemcpyHostToDevice));
