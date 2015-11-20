@@ -55,12 +55,11 @@ __global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
 extern "C" void gpu_sobel(int *l_source_array, int *l_result_array,
                           int src_rows, int src_column_size) {
   int num_bytes_source = src_column_size * src_rows * sizeof(int);
-
   int *l_source_array_d;
   int *l_result_array_d;
 
   gpuErrchk(cudaMalloc((void **)&l_source_array_d, num_bytes_source));
-  gpuErrchk(cudaMemcpy(l_source_array_d, &l_source_array, num_bytes_source,
+  gpuErrchk(cudaMemcpy(l_source_array, l_source_array_d, num_bytes_source,
                        cudaMemcpyHostToDevice));
 
   int result_column_size = src_column_size - 2;
