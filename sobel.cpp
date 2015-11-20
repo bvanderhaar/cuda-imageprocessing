@@ -114,13 +114,10 @@ int main(int argc, char *argv[]) {
   }
   int *l_result_array = 0;
   l_result_array = new int[dest_size];
-  std::cout << "src_rows: " << src_rows
-            << " src_column_size: " << src_column_size;
   clock_t gpu_start = clock();
   gpu_sobel(l_source_array, l_result_array, src_rows, src_column_size);
   clock_t gpu_stop = clock();
   double elapsed_gpu = double(gpu_stop - gpu_start) / (CLOCKS_PER_SEC / 1000);
-
   std::cout << "GPU Time Taken (msec): " << elapsed_gpu << std::endl;
 
   int result_rows = information.height;
