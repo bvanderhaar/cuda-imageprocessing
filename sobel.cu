@@ -56,6 +56,7 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
                           int src_column_size) {
   int row, col;
   int num_bytes_source = src_column_size * src_rows * sizeof(int);
+  printf("num_bytes_source: %i\n", num_bytes_source);
 
   // linear-ize source array
   int *l_source_array = 0;
