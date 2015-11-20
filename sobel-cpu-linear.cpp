@@ -39,6 +39,7 @@ void sobel(int *l_source_array, int *l_result_array, int rows, int column_size,
   bool right_edge = (col == (column_size - 1));
   if (top == false && bottom == false && left_edge == false &&
       right_edge == false) {
+    printf("row: %i col: %i \n", row, col);
     x_0 = l_source_array[(row - 1) * column_size + (col - 1)];
     x_1 = l_source_array[(row - 1) * column_size + (col)];
     x_2 = l_source_array[(row - 1) * column_size + (col + 1)];

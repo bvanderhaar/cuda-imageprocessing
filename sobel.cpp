@@ -53,7 +53,6 @@ int main(int argc, char *argv[]) {
     cerr << "file not found" << endl;
     exit(-1);
   }
-  // std::cout << "New imagefile name? ";
   newImageFileName = argv[2];
   ofstream newImageFile;
   newImageFile.open(newImageFileName.c_str(), ios::binary);

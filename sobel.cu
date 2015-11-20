@@ -20,7 +20,7 @@ __global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
   int col = blockIdx.x * blockDim.x + threadIdx.x;
   int row = blockIdx.y * blockDim.y + threadIdx.y;
   // map the two 2D indices to a single linear, 1D index
-  column_size = gridDim.x * blockDim.x;
+  // column_size = gridDim.x * blockDim.x;
   // int index_source = col * grid_width + row;
 
   // edge of matrix has zeros.  don't process
@@ -51,8 +51,6 @@ __global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
 extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
                           int src_column_size) {
   int row, col;
-  int num_elements_x = src_column_size;
-  int num_elements_y = src_rows;
   int num_bytes_source = src_column_size * src_rows * sizeof(int);
 
   // linear-ize source array
@@ -80,13 +78,13 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
 
   // create two dimensional 4x4 thread blocks
   dim3 block_size;
-  block_size.x = 32;
-  block_size.y = 32;
+  block_size.x = 3;
+  block_size.y = 3;
 
   // configure a two dimensional grid as well
   dim3 grid_size;
-  grid_size.x = num_elements_x / block_size.x;
-  grid_size.y = num_elements_y / block_size.y;
+  grid_size.x = src_column_size / block_size.x;
+  grid_size.y = src_rows / block_size.y;
 
   // grid_size & block_size are passed as arguments to the triple chevrons as
   // usual
