@@ -32,7 +32,8 @@ __global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
   bool right_edge = (col == (column_size - 1));
   if (top == false && bottom == false && left_edge == false &&
       right_edge == false) {
-    printf("row: %i col: %i \n", row, col);
+    printf("row: %i col: %i ", row, col);
+    printf(" block: %i thread: %i \n", blockIdx.x, threadIdx.x);
     x_0 = l_source_array_d[(row - 1) * column_size + (col - 1)];
     x_1 = l_source_array_d[(row - 1) * column_size + (col)];
     x_2 = l_source_array_d[(row - 1) * column_size + (col + 1)];
