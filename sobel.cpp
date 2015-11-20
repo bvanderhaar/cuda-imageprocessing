@@ -11,8 +11,8 @@
 #include <ctime>
 using namespace std;
 
-extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
-                          int src_column_size);
+extern "C" void gpu_sobel(int *l_source_array, int *l_result_array,
+                          int src_rows, int src_column_size);
 
 #pragma pack(1)
 typedef struct {
@@ -123,6 +123,8 @@ int main(int argc, char *argv[]) {
 
   std::cout << "GPU Time Taken (msec): " << elapsed_gpu << std::endl;
 
+  int result_rows = information.height;
+  int result_column_size = information.width;
   // de-linearize result array
   int **newData = (int **)malloc(dest_size * sizeof(int *));
   for (row = 0; row < result_rows; row++) {
