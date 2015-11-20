@@ -26,14 +26,14 @@ __global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
   // int index_source = col * grid_width + row;
 
   // edge of matrix has zeros.  don't process
+  printf("row: %i col: %i ", row, col);
+  printf(" block: %i thread: %i \n", blockIdx.x, threadIdx.x);
   bool top = (row == 0);
   bool bottom = (row == (rows - 1));
   bool left_edge = (col == 0);
   bool right_edge = (col == (column_size - 1));
   if (top == false && bottom == false && left_edge == false &&
       right_edge == false) {
-    printf("row: %i col: %i ", row, col);
-    printf(" block: %i thread: %i \n", blockIdx.x, threadIdx.x);
     x_0 = l_source_array_d[(row - 1) * column_size + (col - 1)];
     x_1 = l_source_array_d[(row - 1) * column_size + (col)];
     x_2 = l_source_array_d[(row - 1) * column_size + (col + 1)];
@@ -84,7 +84,7 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
   // block size should be adjusted to the problem size for performance
   dim3 block_size(src_column_size);
   // grid size should limit the amount of work to be completed
-  dim3 grid_size(src_rows * src_column_size);
+  dim3 grid_size(src_rows);
 
   // grid_size & block_size are passed as arguments to the triple chevrons as
   // usual
