@@ -99,8 +99,9 @@ int main(int argc, char *argv[]) {
     data[0][col] = 0;
     data[rows - 1][col] = 0;
   }
-  std::cout << imageFileName << ": " << information.width << " x "
-            << information.height << std::endl;
+  std::cout << imageFileName <<  std:: endl <<
+    "columns (x): " << information.width <<
+    " rows (y): "   << information.height << std::endl;
 
   int size = information.width * information.height;
   int **newData = (int **)malloc(size * sizeof(int *));
