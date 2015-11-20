@@ -45,7 +45,7 @@ __global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
     sum_0 = (x_0 + (2 * x_1) + x_2) - (x_6 + (2 * x_7) + x_8);
     sum_1 = (x_2 + (2 * x_5) + x_8) - (x_0 + (2 * x_3) + x_6);
     // write new data onto smaller matrix
-    //__syncthreads();
+    __syncthreads();
     l_result_array_d[((row - 1) * (column_size - 2)) + (col - 1)] =
         sum_0 + sum_1;
   }
@@ -66,9 +66,9 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
     }
   }
   int *l_source_array_d = 0;
-  cudaMalloc((void **)&l_source_array_d, num_bytes_source);
-  cudaMemcpy(l_source_array, l_source_array_d, num_bytes_source,
-             cudaMemcpyHostToDevice);
+  gpuErrchk(cudaMalloc((void **)&l_source_array_d, num_bytes_source));
+  gpuErrchk(cudaMemcpy(l_source_array, l_source_array_d, num_bytes_source,
+             cudaMemcpyHostToDevice));
 
   int result_column_size = src_column_size - 2;
   int result_row_size = src_rows - 2;
@@ -76,9 +76,9 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
   int *l_result_array = 0;
   int *l_result_array_d = 0;
   l_result_array = (int *)malloc(num_bytes_result);
-  cudaMalloc((void **)&l_result_array_d, num_bytes_result);
-  cudaMemcpy(l_result_array, l_result_array_d, num_bytes_result,
-             cudaMemcpyHostToDevice);
+  gpuErrchk(cudaMalloc((void **)&l_result_array_d, num_bytes_result));
+  gpuErrchk(cudaMemcpy(l_result_array, l_result_array_d, num_bytes_result,
+             cudaMemcpyHostToDevice));
 
 
   // block size should be adjusted to the problem size for performance
@@ -92,8 +92,8 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
                                       src_rows, src_column_size);
 
   // transfer results back to host
-  cudaMemcpy(l_result_array, l_result_array_d, num_bytes_result,
-             cudaMemcpyDeviceToHost);
+  gpuErrchk(cudaMemcpy(l_result_array, l_result_array_d, num_bytes_result,
+             cudaMemcpyDeviceToHost));
 
   // de-linearize result array
   for (row = 0; row < result_row_size; row++) {
