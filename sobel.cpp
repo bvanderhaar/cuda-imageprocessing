@@ -71,9 +71,9 @@ int main(int argc, char *argv[]) {
     padding = 4 - padding;
 
   // extract image data, initialize vectors
-  int rows = information.height + 2;
-  int column_size = information.width + 2;
-  int src_size = rows * column_size;
+  int src_rows = information.height + 2;
+  int src_column_size = information.width + 2;
+  int src_size = src_rows * src_column_size;
   int **data = (int **)malloc(src_size * sizeof(int *));
   for (row = 1; row <= information.height; row++) {
     data[row] = (int *)malloc(column_size * sizeof(int));
@@ -103,8 +103,6 @@ int main(int argc, char *argv[]) {
             << "columns (x): " << information.width
             << " rows (y): " << information.height << std::endl;
 
-  int size = information.width * information.height;
-  int **newData = (int **)malloc(size * sizeof(int *));
   // linear-ize source array
   int dest_size = information.width * information.height;
   int *l_source_array = 0;
@@ -117,7 +115,7 @@ int main(int argc, char *argv[]) {
   int *l_result_array = 0;
   l_result_array = new int[size];
   clock_t gpu_start = clock();
-  gpu_sobel(l_source_array, l_result_array, rows, column_size);
+  gpu_sobel(l_source_array, l_result_array, src_rows, src_column_size);
   clock_t gpu_stop = clock();
   double elapsed_gpu = double(gpu_stop - gpu_start) / (CLOCKS_PER_SEC / 1000);
 
