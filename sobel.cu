@@ -16,9 +16,11 @@ inline void gpuAssert(cudaError_t code, const char *file, int line,
 __global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
                          int column_size) {
   int x_0, x_1, x_2, x_3, x_5, x_6, x_7, x_8, sum_0, sum_1;
-  // x = blockIdx.x * BLOCK_SIZE + threadIdx.x;
-  int col = blockIdx.x * blockDim.x + threadIdx.x;
-  int row = blockIdx.y * blockDim.y + threadIdx.y;
+  int pos = blockIdx.x * column_size + threadIdx.x;
+  int row = pos/column_size;
+  int col = pos % column_size;
+  // int col = blockIdx.x * threadIdx.x;
+  // int row = blockIdx.y * blockDim.y + threadIdx.y;
   // map the two 2D indices to a single linear, 1D index
   // column_size = gridDim.x * blockDim.x;
   // int index_source = col * grid_width + row;
@@ -76,15 +78,9 @@ extern "C" void gpu_sobel(int **source_array, int **result_array, int src_rows,
   cudaMemcpy(l_result_array, l_result_array_d, num_bytes_result,
              cudaMemcpyHostToDevice);
 
-  // create two dimensional 4x4 thread blocks
-  dim3 block_size;
-  block_size.x = 3;
-  block_size.y = 3;
 
-  // configure a two dimensional grid as well
-  dim3 grid_size;
-  grid_size.x = src_column_size / block_size.x;
-  grid_size.y = src_rows / block_size.y;
+  dim3 dimblock(column_size);
+  dim3 dimgrid(src_rows));
 
   // grid_size & block_size are passed as arguments to the triple chevrons as
   // usual
