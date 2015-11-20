@@ -114,6 +114,8 @@ int main(int argc, char *argv[]) {
   }
   int *l_result_array = 0;
   l_result_array = new int[dest_size];
+  std::cout << "src_rows: " << src_rows
+            << " src_column_size: " << src_column_size;
   clock_t gpu_start = clock();
   gpu_sobel(l_source_array, l_result_array, src_rows, src_column_size);
   clock_t gpu_stop = clock();
