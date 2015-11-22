@@ -32,7 +32,7 @@ typedef struct {
 
 void sobel(int *l_source_array, int *l_result_array, int rows, int column_size,
            int row, int col) {
-  int x_0, x_1, x_2, x_3, x_5, x_6, x_7, x_8, sum_0, sum_1;
+  int x_0, x_1, x_2, x_3, x_5, x_6, x_7, x_8, sum_0, sum_1, sum;
   bool top = (row == 0);
   bool bottom = (row == (rows - 1));
   bool left_edge = (col == 0);
@@ -50,8 +50,14 @@ void sobel(int *l_source_array, int *l_result_array, int rows, int column_size,
     x_8 = l_source_array[(row + 1) * column_size + (col + 1)];
     sum_0 = (x_0 + (2 * x_1) + x_2) - (x_6 + (2 * x_7) + x_8);
     sum_1 = (x_2 + (2 * x_5) + x_8) - (x_0 + (2 * x_3) + x_6);
+    sum = sum_0 + sum_1;
+    if (sum > 20) {
+      sum = 255
+    } else {
+      sum = 0;
+    }
     // write new data onto smaller matrix
-    l_result_array[((row - 1) * (column_size - 2)) + (col - 1)] = sum_0 + sum_1;
+    l_result_array[((row - 1) * (column_size - 2)) + (col - 1)] = sum;
   }
 }
 
