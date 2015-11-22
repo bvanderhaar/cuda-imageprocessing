@@ -52,7 +52,7 @@ void sobel(int *l_source_array, int *l_result_array, int rows, int column_size,
     sum_1 = (x_2 + (2 * x_5) + x_8) - (x_0 + (2 * x_3) + x_6);
     sum = sum_0 + sum_1;
     if (sum > 20) {
-      sum = 255
+      sum = 255;
     } else {
       sum = 0;
     }
