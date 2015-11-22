@@ -138,12 +138,16 @@ int main(int argc, char *argv[]) {
   int result_column_size = information.width;
   int *l_result_array = 0;
   l_result_array = new int[dest_size];
+  clock_t cpu_start = clock();
   for (row = 1; row < (information.height + 1); row++) {
     for (col = 1; col < (information.width + 1); col++) {
       sobel(l_source_array, l_result_array, src_rows, src_column_size, row,
             col);
     }
   }
+  clock_t cpu_stop = clock();
+  double elapsed_cpu = double(cpu_stop - cpu_start) / (CLOCKS_PER_SEC / 1000);
+  std::cout << "CPU Time Taken (msec): " << elapsed_cpu << std::endl;
 
   // de-linearize result array
   int **newData = (int **)malloc(dest_size * sizeof(int *));

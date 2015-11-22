@@ -30,8 +30,7 @@ __global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
     } else {
       sum = 0;
     }
-    l_result_array_d[((row - 1) * (column_size - 2)) + (col - 1)] =
-        sum;
+    l_result_array_d[((row - 1) * (column_size - 2)) + (col - 1)] = sum;
   }
 }
 
