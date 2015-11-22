@@ -1,5 +1,5 @@
 if hash clang-format 2>/dev/null; then
-  clang-format -i sobel.cpp sobel.cu sobel-cpu.cpp sobel-cpu-linear.cpp
+  clang-format -i sobel.cpp sobel.cu sobel-cpu.cpp
 fi
 g++ -std=c++1y -pedantic sobel-cpu.cpp -o cpu-image-filter
 chmod +x cpu-image-filter
