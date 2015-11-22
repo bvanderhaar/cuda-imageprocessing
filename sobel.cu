@@ -1,18 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define gpuErrchk(ans)                                                         \
-  { gpuAssert((ans), __FILE__, __LINE__); }
-inline void gpuAssert(cudaError_t code, const char *file, int line,
-                      bool abort = true) {
-  if (code != cudaSuccess) {
-    fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file,
-            line);
-    if (abort)
-      exit(code);
-  }
-}
-
 __global__ void cu_sobel(int *l_source_array_d, int *l_result_array_d, int rows,
                          int column_size) {
   int x_0, x_1, x_2, x_3, x_5, x_6, x_7, x_8, sum_0, sum_1;
@@ -63,14 +51,12 @@ extern "C" void gpu_sobel(int *l_source_array, int *l_result_array,
   // grid size should limit the amount of work to be completed
   dim3 grid_size(src_rows);
 
-  // grid_size & block_size are passed as arguments to the triple chevrons as
-  // usual
   cu_sobel<<<grid_size, block_size>>>(l_source_array_d, l_result_array_d,
                                       src_rows, src_column_size);
 
   // transfer results back to host
-  gpuErrchk(cudaMemcpy(l_result_array, l_result_array_d, num_bytes_result,
-                       cudaMemcpyDeviceToHost));
+  cudaMemcpy(l_result_array, l_result_array_d, num_bytes_result,
+                       cudaMemcpyDeviceToHost);
 
   // release the memory on the GPU
   cudaFree(l_source_array_d);

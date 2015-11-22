@@ -1,10 +1,3 @@
-// readWrite-bmp.cc
-//
-// extracts pixel data from user-specified .bmp file
-// inserts data back into new .bmp file
-//
-// gw
-
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -12,7 +5,6 @@
 #include <vector>
 #include <cmath>
 #include <ctime>
-//#include <omp.h>
 using namespace std;
 
 #pragma pack(1)
@@ -38,6 +30,31 @@ typedef struct {
   int num_important_colors;
 } information_type;
 
+void sobel(int *l_source_array, int *l_result_array, int rows, int column_size,
+           int row, int col) {
+  int x_0, x_1, x_2, x_3, x_5, x_6, x_7, x_8, sum_0, sum_1;
+  bool top = (row == 0);
+  bool bottom = (row == (rows - 1));
+  bool left_edge = (col == 0);
+  bool right_edge = (col == (column_size - 1));
+  if (top == false && bottom == false && left_edge == false &&
+      right_edge == false) {
+    printf("row: %i col: %i \n", row, col);
+    x_0 = l_source_array[(row - 1) * column_size + (col - 1)];
+    x_1 = l_source_array[(row - 1) * column_size + (col)];
+    x_2 = l_source_array[(row - 1) * column_size + (col + 1)];
+    x_3 = l_source_array[(row)*column_size + (col - 1)];
+    x_5 = l_source_array[(row)*column_size + (col + 1)];
+    x_6 = l_source_array[(row + 1) * column_size + (col - 1)];
+    x_7 = l_source_array[(row + 1) * column_size + (col)];
+    x_8 = l_source_array[(row + 1) * column_size + (col + 1)];
+    sum_0 = (x_0 + (2 * x_1) + x_2) - (x_6 + (2 * x_7) + x_8);
+    sum_1 = (x_2 + (2 * x_5) + x_8) - (x_0 + (2 * x_3) + x_6);
+    // write new data onto smaller matrix
+    l_result_array[((row - 1) * (column_size - 2)) + (col - 1)] = sum_0 + sum_1;
+  }
+}
+
 int main(int argc, char *argv[]) {
   header_type header;
   information_type information;
@@ -45,16 +62,15 @@ int main(int argc, char *argv[]) {
   unsigned char tempData[3];
   int row, col, row_bytes, padding;
   // prepare files
-  cout << "Original imagefile? ";
-  cin >> imageFileName;
+  imageFileName = argv[1];
   ifstream imageFile;
   imageFile.open(imageFileName.c_str(), ios::binary);
   if (!imageFile) {
-    cerr << "file not found" << endl;
+    std::cerr << "file not found" << std::endl;
     exit(-1);
   }
-  cout << "New imagefile name? ";
-  cin >> newImageFileName;
+  // std::cout << "New imagefile name? ";
+  newImageFileName = argv[2];
   ofstream newImageFile;
   newImageFile.open(newImageFileName.c_str(), ios::binary);
 
@@ -72,12 +88,12 @@ int main(int argc, char *argv[]) {
     padding = 4 - padding;
 
   // extract image data, initialize vectors
-  int rows = information.height + 2;
-  int column_size = information.width + 2;
-  int src_size = rows * column_size;
+  int src_rows = information.height + 2;
+  int src_column_size = information.width + 2;
+  int src_size = src_rows * src_column_size;
   int **data = (int **)malloc(src_size * sizeof(int *));
   for (row = 1; row <= information.height; row++) {
-    data[row] = (int *)malloc(column_size * sizeof(int));
+    data[row] = (int *)malloc(src_column_size * sizeof(int));
     for (col = 0; col <= information.width; col++) {
       if (col == 0) {
         data[row][0] = 0;
@@ -93,41 +109,43 @@ int main(int argc, char *argv[]) {
   }
 
   // pad first & last row
-  int last_row = rows - 1;
-  data[0] = (int *)malloc(column_size * sizeof(int));
-  data[last_row] = (int *)malloc(column_size * sizeof(int));
-  for (col = 0; col < column_size; col++) {
+  int last_row = src_rows - 1;
+  data[0] = (int *)malloc(src_column_size * sizeof(int));
+  data[last_row] = (int *)malloc(src_column_size * sizeof(int));
+  for (col = 0; col < src_column_size; col++) {
     data[0][col] = 0;
-    data[rows - 1][col] = 0;
+    data[src_rows - 1][col] = 0;
   }
   std::cout << imageFileName << ": " << information.width << " x "
             << information.height << std::endl;
 
+  // linear-ize source array
   int dest_size = information.width * information.height;
-  int **newData = (int **)malloc(dest_size * sizeof(int *));
-  int x_0, x_1, x_2, x_3, x_5, x_6, x_7, x_8, sum_0, sum_1;
+  int *l_source_array = 0;
+  l_source_array = new int[src_size];
+  for (row = 0; row < src_rows; row++) {
+    for (col = 0; col < src_column_size; col++) {
+      l_source_array[row * src_column_size + col] = data[row][col];
+    }
+  }
+
+  int result_rows = information.height;
+  int result_column_size = information.width;
+  int *l_result_array = 0;
+  l_result_array = new int[dest_size];
   for (row = 1; row < (information.height + 1); row++) {
-    newData[row - 1] = (int *)malloc(information.width * sizeof(int));
     for (col = 1; col < (information.width + 1); col++) {
-      bool top = (row == 0);
-      bool bottom = (row == (rows - 1));
-      bool left_edge = (col == 0);
-      bool right_edge = (col == (column_size - 1));
-      if (top == false && bottom == false && left_edge == false &&
-          right_edge == false) {
-        x_0 = data[row - 1][col - 1];
-        x_1 = data[row - 1][col];
-        x_2 = data[row - 1][col + 1];
-        x_3 = data[row][col - 1];
-        x_5 = data[row][col + 1];
-        x_6 = data[row + 1][col - 1];
-        x_7 = data[row + 1][col];
-        x_8 = data[row + 1][col + 1];
-        sum_0 = (x_0 + (2 * x_1) + x_2) - (x_6 + (2 * x_7) + x_8);
-        sum_1 = (x_2 + (2 * x_5) + x_8) - (x_0 + (2 * x_3) + x_6);
-        // write new data onto smaller matrix
-        newData[row - 1][col - 1] = sum_0 + sum_1;
-      }
+      sobel(l_source_array, l_result_array, src_rows, src_column_size, row,
+            col);
+    }
+  }
+
+  // de-linearize result array
+  int **newData = (int **)malloc(dest_size * sizeof(int *));
+  for (row = 0; row < result_rows; row++) {
+    newData[row] = new int[result_column_size];
+    for (col = 0; col < result_column_size; col++) {
+      newData[row][col] = l_result_array[(row * result_column_size) + col];
     }
   }
 
@@ -150,7 +168,7 @@ int main(int argc, char *argv[]) {
       newImageFile.write((char *)tempData, padding * sizeof(unsigned char));
     }
   }
-  cout << newImageFileName << " done." << endl;
+  std::cout << newImageFileName << " done." << std::endl;
   imageFile.close();
   newImageFile.close();
 

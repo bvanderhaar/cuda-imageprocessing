@@ -1,7 +1,4 @@
-/*
- * compile both driver code and kernel code with nvcc, as in:
- * 			nvcc simple.c simple.cu
- */
+
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -44,8 +41,6 @@ int main(int argc, char *argv[]) {
   unsigned char tempData[3];
   int row, col, row_bytes, padding;
 
-  // prepare files
-  // cout << "Original imagefile? ";
   imageFileName = argv[1];
   ifstream imageFile;
   imageFile.open(imageFileName.c_str(), ios::binary);
@@ -122,6 +117,7 @@ int main(int argc, char *argv[]) {
 
   int result_rows = information.height;
   int result_column_size = information.width;
+
   // de-linearize result array
   int **newData = (int **)malloc(dest_size * sizeof(int *));
   for (row = 0; row < result_rows; row++) {
