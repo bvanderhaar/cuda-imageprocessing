@@ -11,6 +11,9 @@ For the serial program, Clang/LLVM 3.6 is used with level 2 compiler optimizatio
 A Macbook Pro with a Core i5 at 2.7GHz and 8GB RAM and Seawolf's Xeon CPU E3-1231 v3 is used for the serial program. GVSU's Seawolf with a Tesla K40c is used for the GPU version of the program.
 The C++ time API is used to record method execution of the Sobel processing only.  Since both programs execute over a linear array - any linear-izing or de-linearizing is also not included in the time calculation.  Both programs also read and write from the filesystem; this time is ignored in the performance comparison.
 
+## Raw data
+<img src="https://raw.githubusercontent.com/bvanderhaar/cuda-imageprocessing/master/raw-data.png">
+
 ## Discussion
 <img src="https://raw.githubusercontent.com/bvanderhaar/cuda-imageprocessing/master/sobel-running-time.png">
 
