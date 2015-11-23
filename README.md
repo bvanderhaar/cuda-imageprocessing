@@ -13,6 +13,7 @@ The C++ time API is used to record method execution of the Sobel processing only
 
 ## Discussion
 <img src="https://raw.githubusercontent.com/bvanderhaar/cuda-imageprocessing/master/sobel-running-time.png">
+
 As you can see from the chart, smaller sizes do not benefit from GPU acceleration.  Nor do the smaller sizes benefit from the Xeon's server-class CPU.  But, the largest size (2772 x 2703) benefits significantly from the GPU acceleration and the largest size benefits from Xeon's server-class CPU.
 
 Processing on the macbook is surprisingly orders of magnitude faster than the server-class CPU compared as well as the GPU.  The GPU is somewhat expected due to the design of the GPU.  But the slowness on the server CPU is harder to explain.  Is the Macbook's Clang compiler and OS more optimized?  Is it due to the later generation Broadwell architecture versus the Haswell architecure of the Xeon?  More testing is needed to determine these answers.
